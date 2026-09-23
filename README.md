@@ -46,11 +46,21 @@ Niepoprawna data jest ignorowana (strona wraca do `CONFIG`).
 
 ## Zdjęcie
 
-Wrzuć plik jako `assets/klaudia.jpg` (obsługiwany jest też `assets/klaudia.png`).
-Kadr to **4:5 w pionie**, sensowna szerokość to ok. 720 px — obraz i tak jest
-przycinany przez `object-fit: cover`.
+Plik to `assets/klaudia.png` — na sztywno, bez wariantów. Kadr wyświetlany to
+**4:5 w pionie**, obraz jest przycinany przez `object-fit: cover`, więc kwadratowe
+źródło straci lewy i prawy margines.
 
 Bez pliku strona nie psuje się: polaroid pokazuje zastępczy kafel z inicjałem.
+
+## Widoczność w wyszukiwarkach
+
+Strona jest wyłączona z indeksowania: `<meta name="robots" content="noindex, nofollow,
+noarchive, noimageindex">` w `index.html` oraz `robots.txt` z `Disallow: /`.
+
+Uwaga: przy Pages projektowych (`https://<user>.github.io/<repo>/`) roboty czytają
+`robots.txt` z katalogu głównego domeny, czyli z repozytorium `<user>.github.io` —
+plik z tego repo nie zadziała. Realną ochroną jest tu meta `robots`, która działa
+niezależnie od adresu.
 
 ## Uruchomienie lokalne
 
