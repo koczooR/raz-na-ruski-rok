@@ -1,0 +1,349 @@
+/* ──────────────────────────────────────────────────────────────
+   Licznik tygodni — style
+   Tokeny przepisane 1:1 z designu (oklch), z fallbackiem hex
+   dla przeglądarek bez wsparcia oklch.
+   ────────────────────────────────────────────────────────────── */
+
+:root {
+  /* tła */
+  --bg:            #f6f0e2;
+  --bg:            oklch(0.97 0.025 95);
+  --bg-top:        #fdf8e9;
+  --bg-top:        oklch(0.985 0.03 95);
+  --bg-bottom:     #f0e8d6;
+  --bg-bottom:     oklch(0.95 0.03 90);
+  --paper:         #fefdf8;
+  --paper:         oklch(0.995 0.008 95);
+
+  /* tekst */
+  --ink:           #3a3129;
+  --ink:           oklch(0.26 0.03 50);
+  --ink-soft:      #63574c;
+  --ink-soft:      oklch(0.4 0.03 50);
+  --ink-mute:      #9b7f66;
+  --ink-mute:      oklch(0.58 0.06 50);
+  --ink-caption:   #8d7866;
+  --ink-caption:   oklch(0.55 0.04 50);
+  --ink-faint:     #a08c79;
+  --ink-faint:     oklch(0.62 0.04 50);
+
+  /* akcent */
+  --accent:        #c05f3e;
+  --accent:        oklch(0.55 0.15 35);
+  --accent-deep:   #99462b;
+  --accent-deep:   oklch(0.44 0.13 35);
+  --on-accent:     #fefbef;
+  --on-accent:     oklch(0.99 0.02 95);
+  --on-accent-dim: #f5dfb8;
+  --on-accent-dim: oklch(0.93 0.06 80);
+
+  /* kształt i cień */
+  --radius-card:   30px;
+  --shadow-photo:  0 28px 50px -28px rgba(99, 84, 70, 0.55);
+  --shadow-photo:  0 28px 50px -28px oklch(0.4 0.06 50 / 0.55);
+  --shadow-card:   0 18px 44px -20px rgba(192, 95, 62, 0.6);
+  --shadow-card:   0 18px 44px -20px oklch(0.55 0.15 35 / 0.6);
+
+  /* typografia */
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono:    'DM Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── konfetti ─────────────────────────────────────────────── */
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* ── kanwa strony ─────────────────────────────────────────── */
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: radial-gradient(circle at 50% 0%, var(--bg-top), var(--bg-bottom));
+  padding-block: 0 80px;
+  padding-inline: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right));
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 940px;
+}
+
+/* ── nagłówek nadrzędny ───────────────────────────────────── */
+
+.eyebrow {
+  margin: 0;
+  padding: 52px 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  padding-left: 0.22em; /* kompensacja światła końcowego przy centrowaniu */
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* ── układ: zdjęcie + licznik ─────────────────────────────── */
+
+.stage {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: clamp(36px, 6vw, 64px);
+  align-items: center;
+  margin: 48px 0 0;
+}
+
+.stage__photo { display: flex; justify-content: center; }
+.stage__count { text-align: center; }
+
+/* ── polaroid ─────────────────────────────────────────────── */
+
+.polaroid {
+  margin: 0;
+  padding: 16px 16px 20px;
+  background: var(--paper);
+  box-shadow: var(--shadow-photo);
+  transform: rotate(-2deg);
+  animation: photo-in 0.8s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+.polaroid__img {
+  display: block;
+  width: min(360px, 78vw);
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--bg-bottom);
+}
+
+/* zastępnik pokazywany, gdy pliku zdjęcia jeszcze nie ma */
+.polaroid__fallback { display: none; }
+
+.polaroid.is-missing .polaroid__img { display: none; }
+
+.polaroid.is-missing .polaroid__fallback {
+  display: grid;
+  place-items: center;
+  width: min(360px, 78vw);
+  aspect-ratio: 4 / 5;
+  background: linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+  color: var(--ink-faint);
+  font-weight: 800;
+  font-size: clamp(72px, 18vw, 120px);
+  line-height: 1;
+  user-select: none;
+}
+
+.polaroid__caption {
+  margin-top: 14px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  padding-left: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-caption);
+}
+
+/* ── licznik ──────────────────────────────────────────────── */
+
+.counter { display: inline-block; }
+
+.counter__card {
+  display: block;
+  margin: 0;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--accent);
+  border-radius: var(--radius-card);
+  padding: clamp(26px, 5vw, 44px) clamp(32px, 7vw, 62px);
+  box-shadow: var(--shadow-card);
+  animation: pop-in 0.6s 0.15s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.counter__card:hover { transform: translateY(-2px); }
+.counter__card:active { transform: translateY(1px); }
+
+.counter__card:focus-visible {
+  outline: 3px solid var(--accent-deep);
+  outline-offset: 4px;
+}
+
+.counter__number {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(110px, 22vw, 200px);
+  line-height: 0.84;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--on-accent);
+}
+
+.counter__word {
+  display: block;
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  padding-left: 0.3em;
+  text-transform: uppercase;
+  color: var(--on-accent-dim);
+}
+
+.headline {
+  margin: 34px auto 0;
+  max-width: 22ch;
+  font-weight: 600;
+  font-size: clamp(26px, 3.6vw, 36px);
+  line-height: 1.2;
+  text-wrap: pretty;
+}
+
+/* ── tekst pod spodem ─────────────────────────────────────── */
+
+.lede {
+  margin: 56px auto 0;
+  max-width: 44ch;
+  text-align: center;
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.65;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.lede strong { font-weight: 600; }
+
+.footer { margin-top: 56px; text-align: center; }
+
+.footer__date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding-left: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── pomocnicze ───────────────────────────────────────────── */
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── animacje ─────────────────────────────────────────────── */
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92) translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes photo-in {
+  from { opacity: 0; transform: rotate(-4deg) translateY(18px); }
+  to   { opacity: 1; transform: rotate(-2deg); }
+}
+
+/* ── responsywność ────────────────────────────────────────── */
+
+/* bardzo wąskie telefony (320–380 px) */
+@media (max-width: 380px) {
+  .page { padding-bottom: 56px; }
+  .eyebrow { padding-top: 40px; }
+  .stage { margin-top: 36px; }
+  .counter__card { padding: 22px 24px; }
+  .counter__word { font-size: 12px; letter-spacing: 0.22em; padding-left: 0.22em; }
+  .headline { margin-top: 28px; }
+  .lede { margin-top: 44px; }
+}
+
+/* telefon poziomo / niskie okna — cały układ bez przewijania */
+@media (orientation: landscape) and (max-height: 560px) {
+  /* przy nadmiarze miejsca układ wyśrodkowany, nie dosunięty do góry */
+  .page { padding-bottom: 16px; justify-content: center; }
+  .eyebrow { padding-top: 14px; font-size: 10px; }
+  .stage {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: clamp(20px, 4vw, 40px);
+    margin-top: 14px;
+  }
+  .polaroid { padding: 8px 8px 12px; }
+  /* 38vh trzyma zdjęcie w kadrze także przy 375 px wysokości */
+  .polaroid__img,
+  .polaroid.is-missing .polaroid__fallback { width: min(220px, 32vw, 38vh); }
+  .polaroid.is-missing .polaroid__fallback { font-size: clamp(40px, 12vh, 80px); }
+  .polaroid__caption { margin-top: 8px; font-size: 10px; }
+  .counter__card { padding: 14px 26px; }
+  .counter__number { font-size: clamp(56px, 17vh, 110px); }
+  .counter__word { margin-top: 8px; font-size: 11px; }
+  .headline { margin-top: 16px; font-size: clamp(17px, 4.4vh, 26px); }
+  .lede { margin-top: 14px; font-size: 14px; line-height: 1.45; max-width: 52ch; }
+  .footer { margin-top: 12px; }
+}
+
+/* duże ekrany — kompozycja zostaje przy 940 px, tylko oddycha */
+@media (min-width: 1440px) {
+  .page { padding-bottom: 120px; }
+  .eyebrow { padding-top: 76px; }
+}
+
+/* ── preferencje użytkownika ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .polaroid { transform: rotate(-2deg); }
+}
+
+@media print {
+  .confetti { display: none; }
+  .page { background: #fff; min-height: 0; padding: 0; }
+  .polaroid { box-shadow: none; border: 1px solid #ddd; transform: none; }
+  .counter__card {
+    box-shadow: none;
+    background: #fff;
+    border: 2px solid var(--accent-deep);
+  }
+  .counter__number { color: var(--accent-deep); }
+  .counter__word { color: var(--ink-soft); }
+}

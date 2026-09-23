@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f7f1e4">
+<title>Licznik tygodni — Klaudia</title>
+<meta name="description" content="Nieoficjalny licznik zespołu: ile tygodni minęło, odkąd Klaudia była z nami w biurze cały tydzień.">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Licznik tygodni — Klaudia">
+<meta property="og:description" content="Krzesło czeka, herbata stygnie, a my liczymy dalej.">
+<meta property="og:image" content="assets/klaudia.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+
+<div class="page">
+  <main class="wrap">
+
+    <p class="eyebrow">nieoficjalny licznik zespołu</p>
+
+    <div class="stage">
+
+      <div class="stage__photo">
+        <figure class="polaroid" id="polaroid">
+          <img class="polaroid__img" id="photo" src="assets/klaudia.jpg" alt="Klaudia" width="360" height="450">
+          <span class="polaroid__fallback" id="photo-fallback" aria-hidden="true">K</span>
+          <figcaption class="polaroid__caption" id="caption">Klaudia · 1–5 czerwca 2026</figcaption>
+        </figure>
+      </div>
+
+      <div class="stage__count">
+        <div class="counter">
+          <button class="counter__card" id="counter-card" type="button" title="Kliknij, żeby znowu poleciało konfetti">
+            <span class="counter__number" id="weeks">—</span>
+            <span class="counter__word" id="weeks-word">tygodni</span>
+          </button>
+        </div>
+        <p class="sr-only" role="status" aria-live="polite" id="counter-status"></p>
+        <h1 class="headline" id="headline">…odkąd Klaudia była z nami w biurze cały tydzień</h1>
+      </div>
+
+    </div>
+
+    <p class="lede" id="lede">Ostatni taki tydzień to <strong id="lede-range">1–5 czerwca 2026</strong>. Od tamtej pory krzesło czeka, herbata stygnie, a my liczymy dalej.</p>
+
+    <footer class="footer">
+      <time class="footer__date" id="today" datetime="">&nbsp;</time>
+    </footer>
+
+  </main>
+</div>
+
+<script src="confetti.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>
