@@ -128,8 +128,18 @@ body {
   padding: 16px 16px 20px;
   background: var(--paper);
   box-shadow: var(--shadow-photo);
-  transform: rotate(-2deg);
-  animation: photo-in 0.8s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  /* --rot podbija JS przy kliknięciu w zdjęcie (easter egg z podpisami) */
+  transform: rotate(var(--rot, -2deg));
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  cursor: pointer;
+  user-select: none;
+  /* backwards, nie both: po animacji transform wraca pod kontrolę --rot */
+  animation: photo-in 0.8s cubic-bezier(0.2, 0.9, 0.25, 1) backwards;
+}
+
+.polaroid:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 6px;
 }
 
 .polaroid__img {
@@ -139,7 +149,11 @@ body {
   aspect-ratio: 4 / 5;
   object-fit: cover;
   background: var(--bg-bottom);
+  transition: filter 0.4s ease;
 }
+
+/* „tryb L4” — easter egg wpisywany z klawiatury */
+.polaroid.is-sick .polaroid__img { filter: hue-rotate(70deg) saturate(1.4); }
 
 /* zastępnik pokazywany, gdy pliku zdjęcia jeszcze nie ma */
 .polaroid__fallback { display: none; }
@@ -161,7 +175,9 @@ body {
 
 .polaroid__caption {
   margin-top: 14px;
+  max-width: min(360px, 78vw);
   text-align: center;
+  text-wrap: balance;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -193,7 +209,7 @@ body {
 }
 
 .counter__card:hover { transform: translateY(-2px); }
-.counter__card:active { transform: translateY(1px); }
+.counter__card:active { transform: scale(0.97); }
 
 .counter__card:focus-visible {
   outline: 3px solid var(--accent-deep);
@@ -254,6 +270,55 @@ body {
   padding-left: 0.16em;
   text-transform: uppercase;
   color: var(--ink-faint);
+  /* celowo bez cursor: pointer — to ma być znalezione przypadkiem */
+  cursor: default;
+  user-select: none;
+}
+
+/* ── easter eggi ──────────────────────────────────────────── */
+
+/* „herbata” w akapicie: wygląda jak tekst, zachowuje się jak przycisk */
+.egg-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dotted var(--ink-faint);
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.egg-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: min(440px, calc(100vw - 40px));
+  padding: 14px 22px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: #f6f0e0;
+  color: oklch(0.97 0.02 90);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: pretty;
+  box-shadow: 0 16px 40px -18px rgba(44, 38, 32, 0.7);
+  box-shadow: 0 16px 40px -18px oklch(0.2 0.03 50 / 0.7);
+  animation: toast-in 0.35s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) scale(0.92) translateY(14px); }
+  to   { opacity: 1; transform: translateX(-50%); }
 }
 
 /* ── pomocnicze ───────────────────────────────────────────── */
@@ -278,7 +343,7 @@ body {
 
 @keyframes photo-in {
   from { opacity: 0; transform: rotate(-4deg) translateY(18px); }
-  to   { opacity: 1; transform: rotate(-2deg); }
+  to   { opacity: 1; transform: rotate(var(--rot, -2deg)); }
 }
 
 /* ── responsywność ────────────────────────────────────────── */
@@ -332,7 +397,7 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .polaroid { transform: rotate(-2deg); }
+  .polaroid { transform: rotate(var(--rot, -2deg)); }
 }
 
 @media print {

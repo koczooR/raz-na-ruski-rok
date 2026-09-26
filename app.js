@@ -98,7 +98,7 @@
   var el = {};
 
   function cacheElements() {
-    ["weeks", "weeks-word", "counter-status", "headline", "caption", "lede-range", "today", "photo", "photo-fallback", "polaroid", "counter-card", "confetti"].forEach(function (id) {
+    ["weeks", "weeks-word", "counter-status", "headline", "caption", "lede-range", "today", "photo", "photo-fallback", "polaroid", "counter-card", "confetti", "toast", "tea"].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
   }
@@ -122,7 +122,7 @@
     el.weeks.textContent = String(weeks);
     el["weeks-word"].textContent = word;
     el["counter-status"].textContent = weeks + " " + word;
-    el["counter-card"].setAttribute("aria-label", weeks + " " + word + " — kliknij, żeby znowu poleciało konfetti");
+    el["counter-card"].setAttribute("aria-label", weeks + " " + word);
 
     el.today.textContent = formatDate(now);
     el.today.setAttribute("datetime", isoDate(now));
@@ -132,17 +132,121 @@
 
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  var confettiRunning = false;
+  var stopConfetti = null;
 
-  function fireConfetti(config) {
-    if (reduceMotion || confettiRunning || typeof window.confettiBurst !== "function") return;
-    confettiRunning = true;
-    window.confettiBurst(el.confetti, {
-      colors: config.confettiColors,
-      count: config.confettiCount,
-      onDone: function () {
-        confettiRunning = false;
-      },
+  // Każdy nowy wystrzał przerywa poprzedni. Bez tego seria kliknięć
+  // nakładałaby na siebie kolejne pętle animacji.
+  function fire(opts) {
+    if (reduceMotion || typeof window.confettiBurst !== "function") return;
+    if (stopConfetti) stopConfetti();
+    stopConfetti = window.confettiBurst(el.confetti, opts);
+  }
+
+  // ── toast ───────────────────────────────────────────────────
+
+  var toastTimer = null;
+
+  function say(text, ms) {
+    clearTimeout(toastTimer);
+    el.toast.textContent = text;
+    el.toast.hidden = false;
+    // restart animacji wejścia, gdy komunikat zmienia się bez znikania
+    el.toast.style.animation = "none";
+    void el.toast.offsetWidth;
+    el.toast.style.animation = "";
+    toastTimer = setTimeout(function () {
+      el.toast.hidden = true;
+      el.toast.textContent = "";
+    }, ms || 3600);
+  }
+
+  // ── easter eggi ─────────────────────────────────────────────
+
+  // Podpisy pod zdjęciem, cyklicznie przy kliknięciu. Pierwszy powstaje
+  // z CONFIG (imię + zakres), reszta to wymówki.
+  var CAPTIONS = [
+    "„Dziś się trochę źle czuję”",
+    "„Jutro na pewno będę”",
+    "„To tylko jeden dzień zdalnie”",
+    "„Już mi lepiej, ale nie ryzykuję”",
+    "Zdjęcie archiwalne. Nie dotykać.",
+  ];
+
+  var TEA_CONFETTI = { colors: ["#a86b3c", "#c89a5b", "#6f8f4e", "#e6d3a8"], shape: "circle", count: 90 };
+  var OFFICE_CONFETTI = { colors: ["#d8683f", "#f0bf4c", "#4f9d8c", "#e8a0b0"], count: 260 };
+  var REWARD_CONFETTI = { colors: ["#d8683f", "#f0bf4c", "#4f9d8c"], count: 120 };
+
+  var KEY_BUFFER_LEN = 12;
+  var SICK_MS = 6000;
+
+  function initEasterEggs(config) {
+    var captions = [config.name + " · " + config.rangeLabel].concat(CAPTIONS);
+    var photoN = 0;
+    var counterN = 0;
+    var dateN = 0;
+    var typed = "";
+    var sickTimer = null;
+
+    // zdjęcie: kolejny podpis i inny przechył za każdym kliknięciem
+    function nextCaption() {
+      photoN += 1;
+      el.caption.textContent = captions[photoN % captions.length];
+      el.polaroid.style.setProperty("--rot", (photoN % captions.length === 0 ? -2 : photoN % 2 ? 3 : -4) + "deg");
+    }
+
+    el.polaroid.addEventListener("click", nextCaption);
+    el.polaroid.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        nextCaption();
+      }
+    });
+
+    // licznik: nagroda za upór
+    el["counter-card"].addEventListener("click", function () {
+      counterN += 1;
+      if (counterN === 3) say("Kliknięcie nie zeruje licznika. Próbowaliśmy.");
+      if (counterN === 7) {
+        fire(REWARD_CONFETTI);
+        say("Dobra, masz confetti. Ale licznik dalej liczy.");
+      }
+      if (counterN === 12) {
+        say("Jedyny sposób na reset: pięć dni w biurze z rzędu.");
+        counterN = 0;
+      }
+    });
+
+    // „herbata” w akapicie
+    el.tea.addEventListener("click", function () {
+      fire(TEA_CONFETTI);
+      say("Herbata zaparzona. Czeka przy biurku. Jeszcze ciepła.");
+    });
+
+    // data w stopce — bez kursora, do znalezienia przypadkiem
+    el.today.addEventListener("click", function () {
+      dateN += 1;
+      if (dateN >= 3) {
+        say("Dziś? Pewnie jeden dzień zdalnie.");
+        dateN = 0;
+      }
+    });
+
+    // hasła wpisywane z klawiatury
+    window.addEventListener("keydown", function (e) {
+      if (!e.key || e.key.length !== 1) return;
+      typed = (typed + e.key.toLowerCase()).slice(-KEY_BUFFER_LEN);
+
+      if (typed.endsWith("biuro")) {
+        fire(OFFICE_CONFETTI);
+        say("Wpisanie „biuro” to nie to samo co przyjście do biura. Ale doceniamy.");
+      } else if (typed.endsWith("chora")) {
+        el.polaroid.classList.add("is-sick");
+        say("Tryb L4 włączony. Zdrowiej! Licznik i tak liczy.");
+        clearTimeout(sickTimer);
+        sickTimer = setTimeout(function () {
+          el.polaroid.classList.remove("is-sick");
+        }, SICK_MS);
+      }
     });
   }
 
@@ -172,10 +276,8 @@
       if (!document.hidden) renderCount(config);
     });
 
-    fireConfetti(config);
-    el["counter-card"].addEventListener("click", function () {
-      fireConfetti(config);
-    });
+    fire({ colors: config.confettiColors, count: config.confettiCount });
+    initEasterEggs(config);
   }
 
   if (document.readyState === "loading") {

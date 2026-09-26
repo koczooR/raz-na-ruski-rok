@@ -52,6 +52,30 @@ Plik to `assets/klaudia.png` — na sztywno, bez wariantów. Kadr wyświetlany t
 
 Bez pliku strona nie psuje się: polaroid pokazuje zastępczy kafel z inicjałem.
 
+## Easter eggi
+
+Sześć ukrytych reakcji, wszystkie kończą się toastem u dołu ekranu (znika po 3,6 s).
+Definicje siedzą w sekcji „easter eggi" w [`app.js`](app.js).
+
+| Gdzie | Co robi |
+|---|---|
+| Kliknięcie w zdjęcie | cykl sześciu podpisów (wymówki), za każdym razem inny przechył polaroidu |
+| 3. kliknięcie w licznik | „Kliknięcie nie zeruje licznika. Próbowaliśmy." |
+| 7. kliknięcie w licznik | konfetti w nagrodę |
+| 12. kliknięcie w licznik | warunek resetu i wyzerowanie serii |
+| Słowo „herbata" w akapicie | okrągłe konfetti w barwach naparu |
+| Trzykrotne kliknięcie w datę w stopce | „Dziś? Pewnie jeden dzień zdalnie." |
+| Wpisanie `biuro` | duży wystrzał konfetti |
+| Wpisanie `chora` | tryb L4 — zdjęcie zielenieje na 6 sekund |
+
+Hasła z klawiatury działają globalnie: skrypt trzyma bufor ostatnich 12 znaków
+i sprawdza jego końcówkę, więc nie trzeba niczego klikać ani w nic celować.
+
+Zdjęcie i „herbata" są dostępne z klawiatury (Tab, potem Enter/Spacja). Data
+w stopce celowo nie ma `cursor: pointer` — ma być znaleziona przypadkiem.
+Przy `prefers-reduced-motion: reduce` konfetti nie leci, ale toasty i podpisy
+działają normalnie.
+
 ## Widoczność w wyszukiwarkach
 
 Strona jest wyłączona z indeksowania: `<meta name="robots" content="noindex, nofollow,
