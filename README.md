@@ -24,25 +24,47 @@ Wszystko siedzi w obiekcie `CONFIG` na górze [`app.js`](app.js):
 | Pole | Znaczenie |
 |---|---|
 | `name` | imię osoby, której dotyczy licznik |
-| `lastOfficeDate` | data ostatniego pełnego tygodnia w biurze, `YYYY-MM-DD` |
-| `lastOfficeTime` | godzina, od której liczymy (domyślnie `17:00` — koniec piątku) |
-| `rangeLabel` | opis zakresu pokazywany pod zdjęciem i w akapicie |
+| `fullWeeks` | lista piątków kończących pełne tygodnie w biurze, od najstarszego |
+| `lastOfficeTime` | godzina, od której liczymy (domyślnie `15:00` — koniec piątku) |
+| `rangeLabel` | opis ostatniego tygodnia, pokazywany pod zdjęciem i w akapicie |
 | `headline` | nagłówek; `{name}` zostanie podmienione na imię |
+| `ranksTitle` | nagłówek listy rang (pełny tekst — imię trzeba odmienić) |
 | `confettiColors`, `confettiCount` | wygląd konfetti |
 
 Teksty statyczne (eyebrow, akapit pod licznikiem) są w `index.html`.
 
+### Dlaczego lista dat, a nie jedna data
+
+Ostatnia pozycja `fullWeeks` napędza główny licznik. Przerwy między kolejnymi
+pozycjami dają **rekord wszech czasów** — najdłuższą serię bez pełnego tygodnia
+w biurze. Jedna data oznacza brak historii, więc trwająca seria jest od razu
+rekordem.
+
+Przykład:
+
+```js
+fullWeeks: ["2025-06-06", "2026-06-05"],
+```
+
+Przerwa między tymi piątkami to 52 tygodnie, z czego jeden spędzony w biurze,
+więc rekord wynosi 51. Kiedy obecna seria go przebije, pojawia się plakietka
+„nowy rekord" i dodatkowe konfetti.
+
+Po pełnym tygodniu w biurze dopisujesz nowy piątek na koniec listy — licznik
+startuje od zera, a poprzednia seria wchodzi do historii rekordów.
+
 ### Podgląd bez commita
 
-Dwa parametry w adresie nadpisują konfigurację — przydatne do sprawdzenia,
-jak strona wygląda przy innej liczbie:
+Parametry w adresie nadpisują konfigurację — przydatne do sprawdzenia,
+jak strona wygląda przy innych danych:
 
 ```
-?date=2026-04-21          → 22 tygodnie
-?date=2026-09-16&name=Ala → 1 tydzień
+?dates=2025-06-06,2026-06-05   → historia z rekordem 51 tygodni
+?date=2026-09-16               → skrót na jedną datę
+?name=Ala                      → podmiana imienia
 ```
 
-Niepoprawna data jest ignorowana (strona wraca do `CONFIG`).
+Niepoprawne daty są pomijane; gdy nie zostanie żadna, strona wraca do `CONFIG`.
 
 ## Zdjęcie
 
@@ -51,6 +73,19 @@ Plik to `assets/klaudia.png` — na sztywno, bez wariantów. Kadr wyświetlany t
 źródło straci lewy i prawy margines.
 
 Bez pliku strona nie psuje się: polaroid pokazuje zastępczy kafel z inicjałem.
+
+## Rekord i rangi
+
+Pod licznikiem są dwa bloki wyliczane z `fullWeeks`:
+
+**Rekord wszech czasów** — najdłuższa historyczna seria bez pełnego tygodnia,
+pasek postępu obecnej serii względem rekordu i komentarz („Do pobicia rekordu
+brakuje 33 tygodni.", „Remis z rekordem.", „Poprzedni rekord właśnie padł.").
+Pobicie rekordu odpala konfetti i toast 2,6 s po wejściu na stronę.
+
+**Rangi** — siedem progów (1, 4, 10, 20, 26, 39, 52 tygodnie) z nazwami i
+statusem: zdobyta, obecna ranga albo ile tygodni brakuje. Progi zdefiniowane
+w stałej `TIERS` w [`app.js`](app.js).
 
 ## Easter eggi
 

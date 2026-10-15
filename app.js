@@ -2,7 +2,7 @@
    Licznik tygodni — logika strony.
 
    Konfiguracja: obiekt CONFIG poniżej.
-   Podgląd bez commita: ?date=2026-06-05&name=Klaudia
+   Podgląd bez commita: ?dates=2026-06-05,2026-10-02&name=Klaudia
    ────────────────────────────────────────────────────────────── */
 
 (function () {
@@ -12,16 +12,23 @@
     // imię osoby, której dotyczy licznik
     name: "Klaudia",
 
-    // data ostatniego pełnego tygodnia w biurze (YYYY-MM-DD) i godzina,
-    // od której zaczynamy liczyć — u nas koniec piątku
-    lastOfficeDate: "2026-06-05",
+    // Piątki kończące każdy pełny tydzień w biurze, od najstarszego.
+    // Ostatnia pozycja napędza główny licznik, przerwy między kolejnymi
+    // pozycjami wyliczają rekord. Jedna data = brak historii, więc
+    // trwająca seria jest od razu rekordem.
+    fullWeeks: ["2026-06-05"],
+
+    // godzina, od której zaczynamy liczyć — u nas koniec piątku
     lastOfficeTime: "15:00",
 
-    // opis zakresu pokazywany pod zdjęciem i w akapicie
+    // opis ostatniego tygodnia, pokazywany pod zdjęciem i w akapicie
     rangeLabel: "1–5 czerwca 2026",
 
     // {name} zostanie podmienione na imię
     headline: "…odkąd {name} była z nami w biurze cały tydzień",
+
+    // nagłówek listy rang — pełny tekst, bo imię trzeba odmienić
+    ranksTitle: "Ranga Klaudii",
 
     confettiColors: ["#d8683f", "#f0bf4c", "#4f9d8c", "#e8a0b0", "#2f3b4e"],
     confettiCount: 170,
@@ -39,10 +46,20 @@
       return config;
     }
 
-    var date = params.get("date");
-    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(Date.parse(date + "T00:00:00"))) {
-      config.lastOfficeDate = date;
-      config.rangeLabel = formatDate(new Date(date + "T00:00:00"));
+    // ?dates=a,b,c — pełna historia; ?date=a — skrót na jedną datę
+    var raw = params.get("dates") || params.get("date");
+    if (raw) {
+      var list = raw
+        .split(/[,;\s]+/)
+        .filter(Boolean)
+        .filter(function (d) {
+          return /^\d{4}-\d{2}-\d{2}$/.test(d) && Number.isFinite(Date.parse(d + "T00:00:00"));
+        });
+      if (list.length) {
+        config.fullWeeks = list;
+        var last = list.slice().sort()[list.length - 1];
+        config.rangeLabel = formatDate(new Date(last + "T00:00:00"));
+      }
     }
 
     var name = params.get("name");
@@ -55,17 +72,101 @@
 
   // ── liczenie ────────────────────────────────────────────────
 
-  function startTimestamp(config) {
-    var iso = config.lastOfficeDate + "T" + config.lastOfficeTime + ":00";
-    var ts = Date.parse(iso);
-    // awaryjnie: sama data bez godziny, gdyby lastOfficeTime był zepsuty
-    if (!Number.isFinite(ts)) ts = Date.parse(config.lastOfficeDate + "T00:00:00");
-    if (!Number.isFinite(ts)) ts = Date.parse("2026-06-05T00:00:00");
-    return ts;
+  // Lista dat → posortowane znaczniki czasu. Akceptuje tablicę i string
+  // rozdzielony przecinkami, bo tak wygodniej wpisać datę ręcznie.
+  function weekTimestamps(config) {
+    var raw = config.fullWeeks;
+    var list = Array.isArray(raw) ? raw : String(raw || "").split(/[,;\s]+/);
+    var time = config.lastOfficeTime || "00:00";
+
+    var stamps = list
+      .filter(Boolean)
+      .map(function (d) {
+        var ts = Date.parse(d + "T" + time + ":00");
+        // awaryjnie sama data, gdyby lastOfficeTime był zepsuty
+        return Number.isFinite(ts) ? ts : Date.parse(d + "T00:00:00");
+      })
+      .filter(Number.isFinite)
+      .sort(function (a, b) {
+        return a - b;
+      });
+
+    if (!stamps.length) stamps.push(Date.parse("2026-06-05T00:00:00"));
+    return stamps;
   }
 
   function weeksSince(startMs, nowMs) {
     return Math.floor(Math.max(0, nowMs - startMs) / WEEK_MS);
+  }
+
+  // Rekord = najdłuższa przerwa między kolejnymi pełnymi tygodniami.
+  // Minus jeden, bo tydzień spędzony w biurze nie liczy się do serii.
+  function computeRecord(stamps, nowMs) {
+    var current = weeksSince(stamps[stamps.length - 1], nowMs);
+
+    var best = null;
+    for (var i = 1; i < stamps.length; i++) {
+      var gap = Math.max(0, Math.round((stamps[i] - stamps[i - 1]) / WEEK_MS) - 1);
+      if (!best || gap > best.weeks) best = { weeks: gap, from: stamps[i - 1], to: stamps[i] };
+    }
+
+    if (!best || current > best.weeks) {
+      return {
+        current: current,
+        best: current,
+        pct: 100,
+        isNew: !!best && best.weeks > 0,
+        period: formatMonth(stamps[stamps.length - 1]) + " – nadal trwa",
+        note: best
+          ? "Poprzedni rekord (" + best.weeks + " " + plWeeks(best.weeks) + ") właśnie padł. Każdy kolejny tydzień go podbija."
+          : "Trwająca seria jest jednocześnie rekordem. Każdy kolejny tydzień go podbija.",
+      };
+    }
+
+    var left = best.weeks - current;
+    return {
+      current: current,
+      best: best.weeks,
+      pct: Math.round((current / Math.max(1, best.weeks)) * 100),
+      isNew: false,
+      period: formatMonth(best.from) + " – " + formatMonth(best.to),
+      note: left === 0 ? "Remis z rekordem. Jeszcze tydzień i padnie." : "Do pobicia rekordu brakuje " + left + " " + plWeeksGen(left) + ".",
+    };
+  }
+
+  // ── rangi ───────────────────────────────────────────────────
+
+  var TIERS = [
+    [1, "Jeden tydzień", "każdemu się zdarza"],
+    [4, "Miesiąc w kapciach", "pierwsza poważna ranga"],
+    [10, "Weteranka calli", "dwucyfrowo, z wyłączoną kamerą"],
+    [20, "Legenda open space’u", "o biurku krążą już opowieści"],
+    [26, "Pół roku", "herbata dawno wystygła"],
+    [39, "Trzy kwartały", "krzesło zaczyna mieć wątpliwości"],
+    [52, "Pełny rok", "ranga mityczna, nikt jej nie widział"],
+  ];
+
+  function computeTiers(weeks) {
+    var currentIndex = -1;
+    TIERS.forEach(function (tier, i) {
+      if (weeks >= tier[0]) currentIndex = i;
+    });
+
+    var tiers = TIERS.map(function (tier, i) {
+      var done = weeks >= tier[0];
+      var isCurrent = i === currentIndex;
+      var left = tier[0] - weeks;
+      return {
+        weeks: tier[0],
+        title: tier[1],
+        note: tier[2],
+        done: done,
+        current: isCurrent,
+        status: isCurrent ? "obecna ranga" : done ? "zdobyta" : "za " + left + " " + plWeeks(left),
+      };
+    });
+
+    return { tiers: tiers, unlocked: currentIndex + 1, total: TIERS.length };
   }
 
   // odmiana: 1 tydzień / 2–4 tygodnie / 5+ tygodni (z wyjątkiem 12–14)
@@ -77,14 +178,25 @@
     return "tygodni";
   }
 
+  // dopełniacz — po „brakuje" mianownik byłby błędem ("brakuje 33 tygodnie")
+  function plWeeksGen(n) {
+    return n === 1 ? "tygodnia" : "tygodni";
+  }
+
   var dateFormatter = new Intl.DateTimeFormat("pl-PL", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
+  var monthFormatter = new Intl.DateTimeFormat("pl-PL", { month: "long", year: "numeric" });
+
   function formatDate(date) {
     return dateFormatter.format(date);
+  }
+
+  function formatMonth(ts) {
+    return monthFormatter.format(new Date(ts));
   }
 
   function isoDate(date) {
@@ -98,7 +210,15 @@
   var el = {};
 
   function cacheElements() {
-    ["weeks", "weeks-word", "counter-status", "headline", "caption", "lede-range", "today", "photo", "photo-fallback", "polaroid", "counter-card", "confetti", "toast", "tea"].forEach(function (id) {
+    // prettier-ignore
+    [
+      "weeks", "weeks-word", "counter-status", "counter-record", "headline", "caption",
+      "lede-range", "today", "photo", "photo-fallback", "polaroid", "counter-card",
+      "confetti", "toast", "tea",
+      "record-weeks", "record-word", "record-period", "record-badge", "record-fill",
+      "record-current", "record-best", "record-note",
+      "ranks-title", "ranks-progress", "ranks-list",
+    ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
   }
@@ -111,21 +231,80 @@
     el["lede-range"].textContent = config.rangeLabel;
     el["photo-fallback"].textContent = config.name.charAt(0).toUpperCase();
     el.photo.alt = config.name;
+    el["ranks-title"].textContent = config.ranksTitle;
     document.title = "Licznik tygodni — " + config.name;
   }
 
   function renderCount(config) {
     var now = new Date();
-    var weeks = weeksSince(startTimestamp(config), now.getTime());
+    var record = computeRecord(weekTimestamps(config), now.getTime());
+    var weeks = record.current;
     var word = plWeeks(weeks);
 
     el.weeks.textContent = String(weeks);
     el["weeks-word"].textContent = word;
     el["counter-status"].textContent = weeks + " " + word;
     el["counter-card"].setAttribute("aria-label", weeks + " " + word);
+    el["counter-record"].textContent = "rekord: " + record.best;
 
     el.today.textContent = formatDate(now);
     el.today.setAttribute("datetime", isoDate(now));
+
+    renderRecord(record);
+    renderRanks(weeks);
+    return record;
+  }
+
+  function renderRecord(record) {
+    el["record-weeks"].textContent = String(record.best);
+    el["record-word"].textContent = plWeeks(record.best) + " bez pełnego tygodnia";
+    el["record-period"].textContent = record.period;
+    el["record-note"].textContent = record.note;
+    el["record-badge"].hidden = !record.isNew;
+    el["record-fill"].style.width = record.pct + "%";
+    el["record-current"].textContent = "obecna seria: " + record.current;
+    el["record-best"].textContent = "rekord: " + record.best;
+  }
+
+  function renderRanks(weeks) {
+    var data = computeTiers(weeks);
+
+    el["ranks-progress"].textContent = "odblokowane: " + data.unlocked + " z " + data.total;
+
+    var list = el["ranks-list"];
+    list.textContent = "";
+
+    data.tiers.forEach(function (tier) {
+      var row = document.createElement("li");
+      row.className = "rank" + (tier.current ? " is-current" : tier.done ? " is-done" : "");
+
+      var weeksCell = document.createElement("span");
+      weeksCell.className = "rank__weeks";
+      weeksCell.textContent = String(tier.weeks);
+
+      var body = document.createElement("span");
+      body.className = "rank__body";
+
+      var title = document.createElement("span");
+      title.className = "rank__title";
+      title.textContent = tier.title;
+
+      var note = document.createElement("span");
+      note.className = "rank__note";
+      note.textContent = tier.note;
+
+      body.appendChild(title);
+      body.appendChild(note);
+
+      var status = document.createElement("span");
+      status.className = "rank__status";
+      status.textContent = tier.status;
+
+      row.appendChild(weeksCell);
+      row.appendChild(body);
+      row.appendChild(status);
+      list.appendChild(row);
+    });
   }
 
   // ── konfetti ────────────────────────────────────────────────
@@ -175,6 +354,7 @@
   var TEA_CONFETTI = { colors: ["#a86b3c", "#c89a5b", "#6f8f4e", "#e6d3a8"], shape: "circle", count: 90 };
   var OFFICE_CONFETTI = { colors: ["#d8683f", "#f0bf4c", "#4f9d8c", "#e8a0b0"], count: 260 };
   var REWARD_CONFETTI = { colors: ["#d8683f", "#f0bf4c", "#4f9d8c"], count: 120 };
+  var RECORD_CONFETTI = { colors: ["#f0bf4c", "#e8d9b5", "#d8683f"], count: 220 };
 
   var KEY_BUFFER_LEN = 12;
   var SICK_MS = 6000;
@@ -257,7 +437,7 @@
 
     cacheElements();
     renderStatic(config);
-    renderCount(config);
+    var record = renderCount(config);
 
     // Zdjęcie to assets/klaudia.png. Gdyby pliku zabrakło, pokazujemy
     // zaprojektowany zastępnik zamiast złamanej ikonki.
@@ -277,6 +457,16 @@
     });
 
     fire({ colors: config.confettiColors, count: config.confettiCount });
+
+    // drugi wystrzał, gdy obecna seria pobiła poprzedni rekord —
+    // po chwili, żeby nie zlał się z powitalnym
+    if (record.isNew) {
+      setTimeout(function () {
+        fire({ colors: RECORD_CONFETTI.colors, count: RECORD_CONFETTI.count });
+        say("NOWY REKORD! Gratulujemy… chyba.");
+      }, 2600);
+    }
+
     initEasterEggs(config);
   }
 

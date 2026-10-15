@@ -238,6 +238,19 @@ body {
   color: var(--on-accent-dim);
 }
 
+.counter__record {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .headline {
   margin: 34px auto 0;
   max-width: 22ch;
@@ -260,6 +273,210 @@ body {
 }
 
 .lede strong { font-weight: 600; }
+
+/* ── rekord wszech czasów ─────────────────────────────────── */
+
+.record {
+  margin: 72px auto 0;
+  max-width: 680px;
+  padding: clamp(24px, 4vw, 32px);
+  border-radius: 26px;
+  background: var(--ink);
+  color: #f6f0e0;
+  color: oklch(0.97 0.02 90);
+}
+
+.record__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.record__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #e3c98a;
+  color: oklch(0.85 0.1 80);
+}
+
+.record__badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.record__figure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  align-items: baseline;
+  margin-top: 12px;
+}
+
+.record__number {
+  font-weight: 800;
+  font-size: clamp(64px, 12vw, 96px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.record__word {
+  display: block;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.record__period {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+  color: #c3bbab;
+  color: oklch(0.78 0.02 80);
+}
+
+.record__bar {
+  height: 12px;
+  margin-top: 22px;
+  border-radius: 12px;
+  background: #4d4439;
+  background: oklch(0.34 0.03 50);
+  overflow: hidden;
+}
+
+.record__fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 12px;
+  background: #e3c98a;
+  background: oklch(0.85 0.1 80);
+  transition: width 0.8s ease;
+}
+
+.record__scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #b2aa9c;
+  color: oklch(0.72 0.02 80);
+}
+
+.record__note {
+  margin: 16px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #d6cfc0;
+  color: oklch(0.86 0.02 80);
+  text-wrap: pretty;
+}
+
+/* ── rangi ────────────────────────────────────────────────── */
+
+.ranks { margin: 56px auto 0; max-width: 680px; }
+
+.ranks__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.ranks__title {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(26px, 3.6vw, 34px);
+  letter-spacing: -0.02em;
+}
+
+.ranks__progress {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.ranks__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rank {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 20px;
+  border: 1px solid #e0d8c8;
+  border: 1px solid oklch(0.88 0.02 85);
+  border-radius: 18px;
+  background: var(--paper);
+  color: var(--ink);
+  opacity: 0.55;
+}
+
+.rank.is-done {
+  border-color: #e6ddcb;
+  border-color: oklch(0.9 0.025 85);
+  opacity: 1;
+}
+
+.rank.is-current {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  opacity: 1;
+}
+
+.rank__weeks {
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.rank__body { min-width: 0; }
+
+.rank__title { display: block; font-weight: 600; font-size: 18px; line-height: 1.25; }
+
+.rank__note { display: block; margin-top: 2px; font-size: 14px; opacity: 0.75; }
+
+.rank__status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ranks__footnote {
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+  color: #7a6e60;
+  color: oklch(0.48 0.03 50);
+}
 
 .footer { margin-top: 56px; text-align: center; }
 
@@ -359,10 +576,25 @@ body {
   .lede { margin-top: 44px; }
 }
 
+/* wąskie ekrany — status rangi schodzi pod tytuł */
+@media (max-width: 520px) {
+  .rank {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 4px 14px;
+    padding: 14px 16px;
+  }
+  .rank__weeks { grid-row: span 2; align-self: start; }
+  .rank__status { grid-column: 2; }
+  .record { border-radius: 22px; }
+  .record__scale { font-size: 10px; }
+}
+
 /* telefon poziomo / niskie okna — cały układ bez przewijania */
 @media (orientation: landscape) and (max-height: 560px) {
-  /* przy nadmiarze miejsca układ wyśrodkowany, nie dosunięty do góry */
-  .page { padding-bottom: 16px; justify-content: center; }
+  /* margin: auto zamiast justify-content: center — przy treści wyższej
+     niż okno wyśrodkowanie flexem ucina górę i nie da się doscrollować */
+  .page { padding-bottom: 16px; }
+  .wrap { margin-block: auto; }
   .eyebrow { padding-top: 14px; font-size: 10px; }
   .stage {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
@@ -380,6 +612,8 @@ body {
   .counter__word { margin-top: 8px; font-size: 11px; }
   .headline { margin-top: 16px; font-size: clamp(17px, 4.4vh, 26px); }
   .lede { margin-top: 14px; font-size: 14px; line-height: 1.45; max-width: 52ch; }
+  .record { margin-top: 28px; }
+  .ranks { margin-top: 28px; }
   .footer { margin-top: 12px; }
 }
 

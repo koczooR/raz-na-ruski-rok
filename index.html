@@ -46,6 +46,7 @@
           <button class="counter__card" id="counter-card" type="button">
             <span class="counter__number" id="weeks">—</span>
             <span class="counter__word" id="weeks-word">tygodni</span>
+            <span class="counter__record" id="counter-record"></span>
           </button>
         </div>
         <p class="sr-only" role="status" aria-live="polite" id="counter-status"></p>
@@ -55,6 +56,35 @@
     </div>
 
     <p class="lede" id="lede">Ostatni taki tydzień to <strong id="lede-range">1–5 czerwca 2026</strong>. Od tamtej pory krzesło czeka, <button class="egg-link" id="tea" type="button">herbata</button> stygnie, a my liczymy dalej.</p>
+
+    <section class="record" aria-labelledby="record-label">
+      <div class="record__head">
+        <span class="record__label" id="record-label">rekord wszech czasów</span>
+        <span class="record__badge" id="record-badge" hidden>nowy rekord</span>
+      </div>
+      <div class="record__figure">
+        <span class="record__number" id="record-weeks">—</span>
+        <span class="record__meta">
+          <span class="record__word" id="record-word"></span>
+          <span class="record__period" id="record-period"></span>
+        </span>
+      </div>
+      <div class="record__bar"><span class="record__fill" id="record-fill"></span></div>
+      <div class="record__scale">
+        <span id="record-current"></span>
+        <span id="record-best"></span>
+      </div>
+      <p class="record__note" id="record-note"></p>
+    </section>
+
+    <section class="ranks" aria-labelledby="ranks-title">
+      <div class="ranks__head">
+        <h2 class="ranks__title" id="ranks-title">Ranga Klaudii</h2>
+        <span class="ranks__progress" id="ranks-progress"></span>
+      </div>
+      <ol class="ranks__list" id="ranks-list"></ol>
+      <p class="ranks__footnote">Pięć dni w biurze z rzędu zeruje wszystkie rangi. Też byśmy świętowali.</p>
+    </section>
 
     <footer class="footer">
       <time class="footer__date" id="today" datetime="">&nbsp;</time>
