@@ -146,16 +146,21 @@
     [52, "Pełny rok", "ranga mityczna, nikt jej nie widział"],
   ];
 
-  function computeTiers(weeks) {
+  // Ranga raz zdobyta zostaje: o „zdobyte" decyduje rekord wszech czasów,
+  // a nie trwająca seria. Pełny tydzień w biurze zeruje tylko serię,
+  // więc podświetlenie obecnej rangi znika, ale historia nie.
+  function computeTiers(weeks, bestEver) {
     var currentIndex = -1;
     TIERS.forEach(function (tier, i) {
       if (weeks >= tier[0]) currentIndex = i;
     });
 
+    var unlocked = 0;
     var tiers = TIERS.map(function (tier, i) {
-      var done = weeks >= tier[0];
+      var done = bestEver >= tier[0];
       var isCurrent = i === currentIndex;
       var left = tier[0] - weeks;
+      if (done) unlocked += 1;
       return {
         weeks: tier[0],
         title: tier[1],
@@ -166,7 +171,7 @@
       };
     });
 
-    return { tiers: tiers, unlocked: currentIndex + 1, total: TIERS.length };
+    return { tiers: tiers, unlocked: unlocked, total: TIERS.length };
   }
 
   // odmiana: 1 tydzień / 2–4 tygodnie / 5+ tygodni (z wyjątkiem 12–14)
@@ -251,7 +256,7 @@
     el.today.setAttribute("datetime", isoDate(now));
 
     renderRecord(record);
-    renderRanks(weeks);
+    renderRanks(weeks, record.best);
     return record;
   }
 
@@ -266,8 +271,8 @@
     el["record-best"].textContent = "rekord: " + record.best;
   }
 
-  function renderRanks(weeks) {
-    var data = computeTiers(weeks);
+  function renderRanks(weeks, bestEver) {
+    var data = computeTiers(weeks, bestEver);
 
     el["ranks-progress"].textContent = "odblokowane: " + data.unlocked + " z " + data.total;
 

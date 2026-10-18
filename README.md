@@ -87,6 +87,10 @@ Pobicie rekordu odpala konfetti i toast 2,6 s po wejściu na stronę.
 statusem: zdobyta, obecna ranga albo ile tygodni brakuje. Progi zdefiniowane
 w stałej `TIERS` w [`app.js`](app.js).
 
+O tym, czy ranga jest **zdobyta**, decyduje rekord wszech czasów, nie trwająca
+seria — raz wbitej rangi pełny tydzień w biurze nie odbiera. Zeruje się tylko
+podświetlenie **obecnej rangi** i odliczanie do kolejnych progów.
+
 ## Easter eggi
 
 Sześć ukrytych reakcji, wszystkie kończą się toastem u dołu ekranu (znika po 3,6 s).
