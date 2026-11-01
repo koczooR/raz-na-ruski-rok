@@ -16,13 +16,13 @@
     // Ostatnia pozycja napędza główny licznik, przerwy między kolejnymi
     // pozycjami wyliczają rekord. Jedna data = brak historii, więc
     // trwająca seria jest od razu rekordem.
-    fullWeeks: ["2026-06-05", "2026-10-16", "2026-10-23"],
+    fullWeeks: ["2026-06-05", "2026-10-16", "2026-10-23", "2026-10-30"],
 
     // godzina, od której zaczynamy liczyć — u nas koniec piątku
     lastOfficeTime: "15:00",
 
     // opis ostatniego tygodnia, pokazywany pod zdjęciem i w akapicie
-    rangeLabel: "19–23 października 2026",
+    rangeLabel: "26–30 października 2026",
 
     // {name} zostanie podmienione na imię
     headline: "…odkąd {name} była z nami w biurze cały tydzień",
